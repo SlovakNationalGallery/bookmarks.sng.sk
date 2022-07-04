@@ -1,7 +1,7 @@
 <template>
     <Header :code="(item!==null) ? item.code : '000000000'">{{ $t('Artwork detail') }}</Header>
     <div class="bg-gray-softest h-48 border-black border-t-2 border-b-2">
-        <ItemImageLightbox v-if="item" :item="item"></ItemImageLightbox>
+        <ItemImageLightbox v-if="item && marginY!==null" :item="item" :marginY="marginY" />
     </div>
     <div class="h-full border-black p-4 pb-24" v-if="item">
         <h2 class="text-xl font-bold">{{ item.title }}</h2>
@@ -31,20 +31,41 @@ import {ref, onMounted} from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getActiveLanguage } from 'laravel-vue-i18n';
 import { useItemsStore } from '../stores/ItemsStore'
+import smartcrop from "smartcrop"
 import ConfirmButton from '../components/ConfirmButton.vue'
 import Header from '../components/Header.vue'
 import ItemImageLightbox from '../components/ItemImageLightbox.vue'
 
 const item = ref(null)
+const marginY = ref(null)
 const router = useRouter()
 const route = useRoute()
 const itemsStore = useItemsStore()
+
+const getMeta = (url) => {
+     return new Promise((resolve, reject) => {
+         let img = new Image();
+         img.addEventListener('load', () => resolve(img));
+         img.addEventListener('error', (err) => reject(err));
+         img.src = url;
+         });
+     }
+ const scaleMarginY = (crop, windowWidth) => {
+     const topCrop = crop.topCrop
+     const ratio = windowWidth / topCrop.width
+     return topCrop.y * ratio
+ }
 
 onMounted(async () => {
     const response = await axios.get(`/api/items/${route.params.id}`, {headers: {
         'X-locale': getActiveLanguage()
     }})
     item.value = response.data.data
+    const windowWidth = ref(window.innerWidth)
+     const img = await getMeta(item.value.image_src)
+     const responseCrop = await smartcrop.crop(img, { width: windowWidth.value, height: 192, minScale: 1, maxScale: 1 })
+     const scaleMarginYResult = scaleMarginY(responseCrop, windowWidth.value)
+     marginY.value = scaleMarginYResult
 })
 
 const returnHome = () => {

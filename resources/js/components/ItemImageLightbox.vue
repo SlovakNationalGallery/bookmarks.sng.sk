@@ -1,8 +1,12 @@
 <template>
-    <a href="#" class="block h-full w-full relative" @click.prevent="visible = true">
-        <ItemImage :item="item"></ItemImage>
-        <svg class="absolute bottom-3 left-3 w-8" fill="none" viewBox="0 0 32 35" xmlns="http://www.w3.org/2000/svg">
-            <g filter="url(#a)" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+    <a href="#" class="block h-full w-full relative overflow-hidden" @click.prevent="visible = true">
+         <div
+             class ="block w-full h-full relative"
+             :style ="{marginTop: `-${marginY ? `${marginY}px` : 0}`}"
+             >
+         <ItemImage :item="item" :marginY="marginY" />
+         </div>
+         <svg class="absolute top-36 left-3 w-8" fill="none" viewBox="0 0 32 35" xmlns="http://www.w3.org/2000/svg">            <g filter="url(#a)" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
             <path d="m21 6h5v5"/>
             <path d="m19 13 7-7"/>
             <path d="M11 26H6V21"/>
@@ -48,9 +52,12 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import ItemImage from "./ItemImage.vue";
+const props = defineProps({
+    "item": Object,
+    "marginY": Number
+});
 
-const props = defineProps(["item"]);
 const visible = ref(false);
 </script>
